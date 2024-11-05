@@ -72,11 +72,6 @@ func webhookReceiver(listenAddr string) {
 	}
 }
 
-func sendError(res http.ResponseWriter, message string) {
-	res.WriteHeader(400)
-	io.WriteString(res, message)
-}
-
 type Repository struct {
 	FullName string `json:"full_name"`
 }
@@ -87,15 +82,14 @@ type Event struct {
 
 func handleWebhook(res http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
-		sendError(res, "invalid method")
+		http.Error(res, "invalid method", 400)
 		return
 	}
 
 	// Check token
 	token := req.Header["Authorization"]
-	if len(token) != 1 || token[0] != "Bearer " + pages.token {
-		res.WriteHeader(410)
-		io.WriteString(res, "invalid token")
+	if len(token) != 1 || token[0] != "Bearer "+pages.token {
+		http.Error(res, "invalid token", 410)
 		return
 	}
 
@@ -103,12 +97,12 @@ func handleWebhook(res http.ResponseWriter, req *http.Request) {
 	var event Event
 	content, err := io.ReadAll(req.Body)
 	if err != nil {
-		sendError(res, "error reading request body")
+		http.Error(res, "error reading request body", 400)
 		return
 	}
 	err = json.Unmarshal(content, &event)
 	if err != nil {
-		sendError(res, "error parsing request body")
+		http.Error(res, "error parsing request body", 400)
 		return
 	}
 
