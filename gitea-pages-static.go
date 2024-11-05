@@ -62,7 +62,7 @@ func webhookReceiver(listenAddr string) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/webhook", handleWebhook)
 	server := http.Server{
-		Addr:	 listenAddr,
+		Addr:    listenAddr,
 		Handler: mux,
 	}
 	log.Printf("Listening on %s", listenAddr)
@@ -142,16 +142,16 @@ func twoLevelDirs(root string, f func(string)) error {
 
 type Pages struct {
 	repositories string
-	target		 string
-	token		 string
-	mutex		 sync.Mutex
+	target       string
+	token        string
+	mutex        sync.Mutex
 }
 
 func NewPages(repositories string, target string, token string) *Pages {
 	return &Pages{
 		repositories: repositories,
-		target:		  target,
-		token:		  token,
+		target:       target,
+		token:        token,
 	}
 }
 
@@ -165,7 +165,7 @@ func (p *Pages) fullSync() error {
 	available := make(map[string]struct{})
 	err := twoLevelDirs(p.repositories, func(name string) {
 		if strings.HasSuffix(name, ".git") {
-			available[name[:len(name) - 4]] = struct{}{}
+			available[name[:len(name)-4]] = struct{}{}
 		}
 	})
 	if err != nil {
@@ -193,7 +193,7 @@ func (p *Pages) fullSync() error {
 		}
 
 		cmd := exec.Command("git", "rev-parse", BRANCH_NAME)
-		cmd.Env = append(cmd.Env, "GIT_DIR=" + gitDir)
+		cmd.Env = append(cmd.Env, "GIT_DIR="+gitDir)
 		err := cmd.Run()
 		if err != nil {
 			log.Printf("full sync: Removing deployment, repo's %s branch is gone: %s", BRANCH_NAME, repo)
@@ -209,7 +209,7 @@ func (p *Pages) fullSync() error {
 		gitDir := p.getGitDir(repo)
 
 		cmd := exec.Command("git", "rev-parse", BRANCH_NAME)
-		cmd.Env = append(cmd.Env, "GIT_DIR=" + gitDir)
+		cmd.Env = append(cmd.Env, "GIT_DIR="+gitDir)
 		err := cmd.Run()
 		if err != nil {
 			continue
@@ -235,7 +235,7 @@ func (p *Pages) syncRepo(repo string) {
 }
 
 func (p *Pages) getGitDir(repo string) string {
-	return filepath.Join(p.repositories, repo + ".git")
+	return filepath.Join(p.repositories, repo+".git")
 }
 
 func (p *Pages) getDeployDir(repo string) string {
@@ -251,10 +251,9 @@ func (p *Pages) writeRepo(repo string) {
 	}
 	cmd := exec.Command("git", "restore", "-s", BRANCH_NAME, "--worktree", "--no-overlay", ".")
 	cmd.Dir = deployDir
-	cmd.Env = append(cmd.Env, "GIT_WORK_TREE=" + deployDir)
-	cmd.Env = append(cmd.Env, "GIT_DIR=" + gitDir)
-	err := cmd.Run()
-	if err != nil {
+	cmd.Env = append(cmd.Env, "GIT_WORK_TREE="+deployDir)
+	cmd.Env = append(cmd.Env, "GIT_DIR="+gitDir)
+	if err := cmd.Run(); err != nil {
 		log.Printf("Error updating site: %v", err)
 	}
 }
