@@ -50,7 +50,9 @@ func main() {
 
 func periodicSync() {
 	for {
-		pages.fullSync()
+		if err := pages.fullSync(); err != nil {
+			log.Printf("Error: %v", err)
+		}
 		time.Sleep(FULL_SYNC_INTERVAL)
 	}
 }
@@ -250,7 +252,9 @@ func (p *Pages) writeRepo(repo string) {
 	gitDir := p.getGitDir(repo)
 	deployDir := p.getDeployDir(repo)
 
-	os.MkdirAll(deployDir, 0755)
+	if err := os.MkdirAll(deployDir, 0755); err != nil {
+		log.Printf("Error updating site: %v", err)
+	}
 	cmd := exec.Command("git", "restore", "-s", BRANCH_NAME, "--worktree", "--no-overlay", ".")
 	cmd.Dir = deployDir
 	cmd.Env = append(cmd.Env, "GIT_WORK_TREE=" + deployDir)
